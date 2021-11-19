@@ -32,20 +32,29 @@
     "test": "umi test",
     "test:all": "node ./tests/run-tests.js",
     "test:component": "umi test ./src/components",
-    "tsc": "tsc --noEmit"
+    "tsc": "tsc --noEmit",
+    "xterm": "^4.10.0",
+    "xterm-addon-fit": "^0.5.0",
+    "stompjs": "^2.3.3"
   },
   "lint-staged": {
     "**/*.less": "stylelint --syntax less",
     "**/*.{js,jsx,ts,tsx}": "npm run lint-staged:js",
-    "**/*.{js,jsx,tsx,ts,less,md,json}": ["prettier --write"]
+    "**/*.{js,jsx,tsx,ts,less,md,json}": [
+      "prettier --write"
+    ]
   },
-  "browserslist": ["> 1%", "last 2 versions", "not ie <= 10"],
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 10"
+  ],
   "dependencies": {
     "@ant-design/icons": "^4.5.0",
     "@ant-design/pro-descriptions": "^1.9.0",
     "@ant-design/pro-form": "^1.43.0",
-    "@ant-design/pro-layout": "^6.26.0",
-    "@ant-design/pro-table": "^2.56.0",
+    "@ant-design/pro-layout": "^6.30.0",
+    "@ant-design/pro-table": "^2.57.2",
     "@umijs/route-utils": "^2.0.3",
     "antd": "4.16.13",
     "classnames": "^2.2.6",
@@ -58,8 +67,10 @@
     "react-dev-inspector": "^1.1.1",
     "react-dom": "^17.0.0",
     "react-helmet-async": "^1.0.4",
+    "stompjs": "^2.3.3",
     "umi": "^3.5.0",
-    "umi-serve": "^1.9.10"
+    "umi-serve": "^1.9.10",
+    "xterm": "^4.15.0"
   },
   "devDependencies": {
     "@ant-design/pro-cli": "^2.0.2",
@@ -92,10 +103,16 @@
     "mockjs": "^1.0.1-beta3",
     "prettier": "^2.3.2",
     "puppeteer-core": "^8.0.0",
+    "sockjs-client": "^1.5.2",
     "stylelint": "^13.0.0",
     "swagger-ui-react": "^3.52.3",
-    "typescript": "^4.2.2"
+    "typescript": "^4.2.2",
+    "xterm-addon-fit": "^0.5.0"
   },
-  "engines": { "node": ">=10.0.0" },
-  "gitHooks": { "commit-msg": "fabric verify-commit" }
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "gitHooks": {
+    "commit-msg": "fabric verify-commit"
+  }
 }
