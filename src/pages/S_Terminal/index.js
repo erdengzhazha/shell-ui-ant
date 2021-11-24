@@ -14,14 +14,14 @@ import '../../assets/S_Terminal/css/common.css';
 export default class S_Terminal extends React.Component {
   constructor(props) {
     super(props);
-    this.host = '47.96.11.161'; // shell主机地址
+    this.host = '47.97.255.245'; // shell主机地址
     this.port = '22'; // shell端口号默认22
-    this.password = 'Ovopark#2020'; // shell 密码
+    this.password = 'Ovopark#2021'; // shell 密码
     this.username = 'root'; //shell登录人
     this.logingUserName = 'XiuEr'; // 当前网页登录人
     this.token = '8c21576b52b845478b4bd159ee217b75' + new Date().getTime().toString();
     localStorage.setItem('shell_token', this.token);
-    this.SOCKET_ENDPOINT = 'http://localhost:28849/mydlq?authenticator=' + this.token; // 这边的地址不可以填写域名,请填写ip
+    this.SOCKET_ENDPOINT = 'http://172.16.3.245:28849/mydlq?authenticator=' + this.token; // 这边的地址不可以填写域名,请填写ip
     this.SUBSCRIBE_PREFIX = '/user/topic';
     this.SUBSCRIBE = '/user/topic';
     this.SEND_ENDPOINT = '/app/test';
@@ -95,7 +95,7 @@ export default class S_Terminal extends React.Component {
         fontSize: localStorage.getItem('fontSize'),
         cursor: 'help', // 设置光标
         fastScrollModifier: 'ctrl',
-      },
+      }
     });
     // 3. 创建 STOMP 对象
     const sock = new SockJS(this.SOCKET_ENDPOINT);
@@ -109,11 +109,17 @@ export default class S_Terminal extends React.Component {
     fitPlugin.fit();
     // term 调整大小
     term.onResize(({ cols, rows }) => {
-      console.log(cols, rows);
+      console.log("onResize",cols, rows);
+      stompClient.send(this.SEND_ENDPOINT, { authenticator: this.token }, 'stty rows '+rows+" columns "+cols +"\r"); // 回车
     });
 
-    window.onresize = () => fitPlugin.fit();
-
+    window.onresize = () => {
+      const columns = term.cols
+      const rows = term.rows
+      console.log("发送后端 stty",columns,rows)
+      // stompClient.send(this.SEND_ENDPOINT, { authenticator: this.token }, 'stty rows '+rows+" columns "+columns +"\r"); // 回车
+      fitPlugin.fit()
+    };
     // 5. STOPM连接 与 SSH服务端建立连接
     stompClient.connect(
       this.stompHeaders,
@@ -134,16 +140,19 @@ export default class S_Terminal extends React.Component {
         );
         term.write(
           'WellCome to Avengers ... host : ' +
-            this.host +
-            ' 😊    🌟  🌟  🌟  明天会更美好! 🌟  🌟  🌟\n \n \r',
+          this.host +
+          ' 😊    🌟  🌟  🌟  明天会更美好! 🌟  🌟  🌟\n \n \r',
         );
         console.log(this.SUBSCRIBE_PREFIX);
         const subscribe = stompClient.subscribe(this.SUBSCRIBE_PREFIX, (response) => {
           console.log('订阅成功! 返回值 = ' + response.body);
           try {
-            if (response.body !== 'cd ~ && script -q -a') {
-              console.log('true');
-              term.write(response.body);
+            if (response.body !== 'cd ~ && script -q -a'){
+              if(response.body.indexOf("stty")<0){
+                term.write(response.body);
+              }else{
+                term.writeln("The window size has been adjusted to optimumn")
+              }
             }
           } catch (e) {
             console.log(e);
@@ -162,6 +171,9 @@ export default class S_Terminal extends React.Component {
         setTimeout(() => {
           stompClient.send(this.SEND_ENDPOINT, { authenticator: this.token }, '\r'); // 回车
         }, 1500);
+        setTimeout(() => {
+          stompClient.send(this.SEND_ENDPOINT, { authenticator: this.token }, 'stty rows 24  columns 135 \r'); // 回车
+        }, 2000);
       },
       (error) => {
         this.errorCallBack(term, error);

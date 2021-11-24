@@ -12,9 +12,9 @@ export default class S_Top extends React.Component {
 
   constructor(props) {
     super(props);
-    this.host = '47.96.11.161'; // shell主机地址
+    this.host = '47.97.255.245'; // shell主机地址
     this.port = '22'; // shell端口号默认22
-    this.password = 'Ovopark#2020'; // shell 密码
+    this.password = 'Ovopark#2021'; // shell 密码
     this.username = 'root'; //shell登录人
     this.logingUserName = 'XiuEr'; // 当前网页登录人
     this.token = '8c21576b52b845478b4bd159ee217b75' + new Date().getTime().toString();
@@ -25,6 +25,8 @@ export default class S_Top extends React.Component {
     this.SEND_ENDPOINT = '/app/test';
     this.temporaryUser = '';
     this.newTabIndex = 0;
+    this.timeout1 = null
+    this.timeout2 = null
     // STOMP 相关参数
     this.stompHeaders = {
       host: this.host,
@@ -192,10 +194,24 @@ export default class S_Top extends React.Component {
             let secondHalfObjectIndex = 0
             // 1.3.1  将数组分割为 一个对象数组
             secondHalf.forEach((item,index)=>{
-              let elements = item.split(" ").filter(e=>{
+              debugger
+              item=item
+                .replace("\r","")
+                .replace("\n","")
+                .replace("\u000f","")
+                .replace("\u001b","")
+                .replace(/\[\d{0,}m/g,"")
+                .replace("\x1B","")
+                .replace("\x0F","")
+                .replace("\r\n","")
+              debugger
+              let elements = item.split(" ")
+                .filter(e=>{
                 let flag = true
                 if(e == ''||e == "\r\n\u001b[m\u000f"||e == "\r\n\u001b[7m"||e=="\u001b[m\u000f\u001b"
                 ||e=="\r\n\x1B[m\x0F\x1B[1m"
+                  ||e=="\r\n"
+                  ||e=="\u001b"
                 ){
                   flag = false
                 }
@@ -207,6 +223,7 @@ export default class S_Top extends React.Component {
                 secondHalfObject[secondHalfObjectIndex++] = elements
               }
             })
+            console.log("secondHalfObject",secondHalfObject)
             let tmpTopProcess = this.state.TopProcess;
             secondHalfObject.forEach((item,index) =>{
               let Process ={
@@ -224,12 +241,12 @@ export default class S_Top extends React.Component {
                 COMMAND: ''
               }
               let itemElement = item[0];
-              itemElement=itemElement
-                .replace("\r","")
-                .replace("\n","")
-                .replace("\u000f","")
-                .replace("\u001b","")
-                .replace(/\[\d{0,}m/g,"")
+              // itemElement=itemElement
+              //   .replace("\r","")
+              //   .replace("\n","")
+              //   .replace("\u000f","")
+              //   .replace("\u001b","")
+              //   .replace(/\[\d{0,}m/g,"")
               Process.PID = itemElement
               Process.USER = item[1]
               Process.PR =item[2]
@@ -241,7 +258,11 @@ export default class S_Top extends React.Component {
               Process.CPUProp =item[8]
               Process.MEMProp =item[9]
               Process.TIME = item[10]
-              Process.COMMAND =item[11]
+              let command = ''
+              for(let i=11;i<item.length;i++){
+                command = command + item[i]
+              }
+              Process.COMMAND =command
               tmpTopProcess[index] = Process
             })
             // 将数据塞入状态对象
@@ -264,27 +285,36 @@ export default class S_Top extends React.Component {
           }
         });
         // 退订的方法
-        setTimeout(() => {
+        this.timeout1 = setTimeout(() => {
           // 发送shell 录制的命令
           stompClient.send(
             this.SEND_ENDPOINT,
             { authenticator: this.token },
-            'cd ~ && script -q -a',
+            'cd ~ && script -q -a \r',
           ); // 发送录制
         }, 1000);
-        setTimeout(() => {
-          stompClient.send(this.SEND_ENDPOINT, { authenticator: this.token }, '\r'); // 回车
-        }, 1500);
-        setTimeout(() => {
-          stompClient.send(this.SEND_ENDPOINT, { authenticator: this.token }, 'top \r'); // 发送Top
+        this.timeout2=setTimeout(() => {
+          stompClient.send(this.SEND_ENDPOINT, { authenticator: this.token }, 'stty rows 24  columns 160 \r'); // 回车
+          stompClient.send(this.SEND_ENDPOINT, { authenticator: this.token }, 'top -c \r'); // 发送Top
         }, 2000);
+        this.timeout3=setTimeout(() => {
+          stompClient.send(this.SEND_ENDPOINT, { authenticator: this.token }, 'M'); // 按照内存排序
+        }, 4000);
       },
       (error) => {
         console.error('连接错误!');
       },
     );
   }
+  componentWillUnmount() {
+    // 请注意Un"m"ount的m是小写
 
+    // 如果存在this.timer，则使用clearTimeout清空。
+    // 如果你使用多个timer，那么用多个变量，或者用个数组来保存引用，然后逐个clear
+    this.timeout1 && clearTimeout(this.timeout1);
+    this.timeout2 && clearTimeout(this.timeout2);
+    this.timeout3 && clearTimeout(this.timeout3);
+  }
   render() {
     let { sortedInfo, filteredInfo } = this.state;
     sortedInfo = sortedInfo || {};

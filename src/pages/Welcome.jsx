@@ -5,6 +5,7 @@ import { useIntl, FormattedMessage } from 'umi';
 import styles from './Welcome.less';
 import S_Terminal from '@/pages/S_Terminal';
 import S_Top from '@/pages/S_Top';
+import S_Disk from "@/pages/S_Disk";
 
 const CodePreview = ({ children }) => (
   <pre className={styles.pre}>
@@ -59,8 +60,9 @@ const Welcome = () => {
         {/*  </a>*/}
         {/*</Typography.Text>*/}
         {/*<CodePreview>yarn add @ant-design/pro-layout</CodePreview>*/}
-        {/*<S_Terminal ></S_Terminal>*/}
+        <S_Terminal ></S_Terminal>
         <S_Top></S_Top>
+        <S_Disk></S_Disk>
       </Card>
     </PageContainer>
   );
